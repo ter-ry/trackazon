@@ -9,13 +9,25 @@ class Test(scrapy.Spider):
 
     def __init__(self, *args, **kwargs):
         super(Test, self).__init__(*args, **kwargs)
-        self.asins = ["B0C273F3SN", "B0921GXN9Q"]  # <-- Replace with your ASINs
+        self.asins = ["B00IJ0ALYS", "B001ARYU58"]
         self.results = []
 
     def start_requests(self):
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/122.0.0.0 Safari/537.36"
+            ),
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Referer": "https://www.google.com/"
+        }
+
         for asin in self.asins:
             url = f"https://www.amazon.com/dp/{asin.strip()}"
-            yield scrapy.Request(url=url, callback=self.parse, meta={'asin': asin})
+            yield scrapy.Request(url=url, headers=headers, callback=self.parse, meta={'asin': asin})
 
     def parse(self, response):
         def clean_string(s):
