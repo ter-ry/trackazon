@@ -86,6 +86,9 @@ class SearchEngine(scrapy.Spider):
             rank_text = response.xpath(".//div[@id='detailBulletsWrapper_feature_div']/ul[1]/li[1]").get()
 
         if not rank_text:
+            rank_text = response.xpath(".//span[contains(text(), 'Best Sellers Rank:')]/following-sibling::text()[1]").get()
+
+        if not rank_text:
             main_category = None
             main_category_rank = None
             sub_category = None
