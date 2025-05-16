@@ -92,7 +92,7 @@ REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
 
-SCRAPERAPI_KEY = '13dc5046636b184bd17cb4a4b71535ee111'
+SCRAPERAPI_KEY = '13dc5046636b184bd17cb4a4b71535ee'
 
 DOWNLOADER_MIDDLEWARES = {
     'scrapy_scraperapi_middleware.ScrapyScraperAPIMiddleware': 1,

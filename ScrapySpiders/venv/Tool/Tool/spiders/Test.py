@@ -9,7 +9,7 @@ class Test(scrapy.Spider):
 
     def __init__(self, *args, **kwargs):
         super(Test, self).__init__(*args, **kwargs)
-        self.asins = ["B0C273F3SN", "B08KT2Z93D"]  # <-- Replace with your ASINs
+        self.asins = ["B0C273F3SN", "B0921GXN9Q"]  # <-- Replace with your ASINs
         self.results = []
 
     def start_requests(self):
@@ -56,6 +56,8 @@ class Test(scrapy.Spider):
 
         # About
         about = response.xpath(".//div[@id='feature-bullets']//span[@class='a-list-item']/text()").getall()
+        if not about:
+            about = response.xpath("//ul[contains(@class, 'a-unordered-list') and contains(@class, 'a-vertical')]//span[@class='a-list-item a-size-base a-color-base']/text()").getall()
         about = [item.strip() for item in about if item.strip()]
 
         # Best Sellers Rank
