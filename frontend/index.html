@@ -1,1 +1,78 @@
-<!-- Main UI -->
+<!-- frontend/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Amazon ASIN Lookup</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    td, th { border: 1px solid #ddd; padding: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Amazon ASIN Lookup</h1>
+  <input id="asinInput" type="text" placeholder="Enter ASINs (comma-separated)" style="width: 80%;">
+  <button onclick="lookupASINs()">Lookup</button>
+  <div id="loading" style="display: none;">Loading...</div>
+  <table id="resultTable" style="display: none;">
+    <thead>
+    <tr>
+        <th>ASIN</th>
+        <th>Title</th>
+        <th>Price</th>
+        <th>Rating</th>
+        <th># Ratings</th>
+        <th>Main Category</th>
+        <th>Main Rank</th>
+       <th>Sub Category</th>
+        <th>Sub Rank</th>
+       <th>Image</th>
+      </tr>
+    </thead>
+    <tbody id="resultBody"></tbody>
+  </table>
+
+  <script>
+    async function lookupASINs() {
+      const input = document.getElementById("asinInput").value;
+      const asins = input.split(",").map(x => x.trim()).filter(Boolean);
+      if (!asins.length) return alert("Please enter at least one ASIN.");
+
+      document.getElementById("loading").style.display = "block";
+      document.getElementById("resultTable").style.display = "none";
+
+      const response = await fetch("http://localhost:5000/lookup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ asins })
+      });
+
+      const data = await response.json();
+      document.getElementById("loading").style.display = "none";
+
+      const tbody = document.getElementById("resultBody");
+      tbody.innerHTML = "";
+      data.forEach(item => {
+        const row = `<tr>
+          <td>${item.asin}</td>
+          <td>${item.name || "N/A"}</td>
+          <td>${item.price || "N/A"}</td>
+          <td>${item.rating || "N/A"}</td>
+          <td>${item.no_of_ratings || "N/A"}</td>
+          <td>${item.main_category || "N/A"}</td>
+          <td>${item.main_category_rank || "N/A"}</td>
+          <td>${item.sub_category || "N/A"}</td>
+          <td>${item.sub_category_rank || "N/A"}</td>
+          <td>
+            ${item.image ? `<img src="${item.image}" width="100"/>` : "N/A"}
+          </td>
+        </tr>`;
+        tbody.innerHTML += row;
+      });
+
+      document.getElementById("resultTable").style.display = "table";
+    }
+  </script>
+</body>
+</html>
