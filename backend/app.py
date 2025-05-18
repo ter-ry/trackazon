@@ -1,53 +1,45 @@
-import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import subprocess
 import json
+import os
+import datetime
 
 app = Flask(__name__)
 CORS(app)
 
-# Calculate absolute paths to the scraper folder
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # project root
-SCRAPER_DIR = os.path.join(BASE_DIR, "scraper")
-asin_file = os.path.join(SCRAPER_DIR, "input_asins.json")
-output_file = os.path.join(SCRAPER_DIR, "output.json")
-
 @app.route("/lookup", methods=["POST"])
 def lookup():
-    data = request.json
+    data = request.get_json()
     asins = data.get("asins", [])
+
     if not asins:
         return jsonify({"error": "No ASINs provided"}), 400
 
-    # Clean up previous files
-    if os.path.exists(asin_file):
-        os.remove(asin_file)
-    if os.path.exists(output_file):
-        os.remove(output_file)
+    asin_file = "backend/scraper/input_asins.json"
+    output_file = "backend/scraper/output.json"
 
-    # Save input ASINs
-    with open(asin_file, "w") as f:
+    # Write ASINs to file
+    with open(asin_file, "w", encoding="utf-8") as f:
         json.dump(asins, f)
 
-    # Run the spider
+    # Run the Scrapy spider inside scraper folder
+    result = subprocess.run(
+        ["scrapy", "crawl", "asin", "-a", f"asins={','.join(asins)}"],
+        cwd="backend/scraper"
+    )
+
+    if result.returncode != 0:
+        return jsonify({"error": "Scraping failed"}), 500
+
+    # Read and return scraped data
     try:
-        subprocess.run(["scrapy", "crawl", "asin_spider"], cwd=SCRAPER_DIR, check=True)
-    except subprocess.CalledProcessError as e:
-        return jsonify({"error": "Scraper failed", "details": e.stderr}), 500
-
-    # Read output
-    if not os.path.exists(output_file):
-        return jsonify({"error": "No output file found"}), 500
-
-    with open(output_file, "r", encoding="utf-8") as f:
-        scraped_data = json.load(f)
-
-    # Clean up output if desired
-    os.remove(asin_file)
-    os.remove(output_file)
-
-    return jsonify(scraped_data)
+        with open(output_file, "r", encoding="utf-8") as f:
+            scraped_data = json.load(f)
+        return jsonify(scraped_data)
+    except Exception as e:
+        return jsonify({"error": f"Failed to read output: {str(e)}"}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=True, host="0.0.0.0", port=port)

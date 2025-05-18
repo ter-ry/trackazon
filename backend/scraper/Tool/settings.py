@@ -107,7 +107,7 @@ SCRAPERAPI_OPTIONS = {
 DOWNLOAD_TIMEOUT = 60
 
 FEEDS = {
-    'output.json': {
+    'backend/scraper/output.json': {
         'format': 'json',
         'overwrite': True
     }
