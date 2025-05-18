@@ -26,7 +26,8 @@ class AsinSpider(scrapy.Spider):
         }
         asin_path = os.path.join(os.getcwd(), "input_asins.json")
         with open(asin_path, "r") as f:
-            asins = json.load(f)
+            raw_asins = json.load(f)
+            asins = [re.sub(r'[\u200e\u200f]', '', asin.strip()) for asin in raw_asins]
         
         for asin in asins:
             url = f"https://www.amazon.ca/dp/{asin}"

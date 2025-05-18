@@ -36,7 +36,10 @@
   <script>
     async function lookupASINs() {
       const input = document.getElementById("asinInput").value;
-      const asins = input.split(",").map(x => x.trim()).filter(Boolean);
+      const asins = input
+        .split(",")
+        .map(x => x.replace(/[\u200e\u200f]/g, "").trim())
+        .filter(Boolean);
       if (!asins.length) return alert("Please enter at least one ASIN.");
 
       document.getElementById("loading").style.display = "block";
