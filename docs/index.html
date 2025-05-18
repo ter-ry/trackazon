@@ -74,22 +74,31 @@
         }
       }, 300);
 
-      const response = await fetch("http://localhost:5000/lookup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ asins })
-      });
+      try {
+        const response = await fetch("http://localhost:5000/lookup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ asins })
+        });
 
-      const data = await response.json();
-      clearInterval(interval);
-      document.getElementById("progressBar").style.width = "100%";
-      setTimeout(() => document.getElementById("progressBar").style.width = "0%", 1000);
+        if (!response.ok) throw new Error("Backend error");
 
-      document.getElementById("loading").classList.add("hidden");
-      document.getElementById("tableWrapper").classList.remove("hidden");
+        const data = await response.json();
+        clearInterval(interval);
+        document.getElementById("progressBar").style.width = "100%";
+        setTimeout(() => document.getElementById("progressBar").style.width = "0%", 1000);
 
-      currentData = data;
-      renderTable(currentData);
+        document.getElementById("loading").classList.add("hidden");
+        document.getElementById("tableWrapper").classList.remove("hidden");
+
+        currentData = data;
+        renderTable(currentData);
+      } catch (err) {
+        clearInterval(interval);
+        document.getElementById("progressBar").style.width = "0%";
+        document.getElementById("loading").classList.add("hidden");
+        alert("❌ Could not connect to backend.\nPlease make sure Flask is running at http://localhost:5000.");
+      }
     }
 
     function renderTable(data) {
