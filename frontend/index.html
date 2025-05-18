@@ -5,17 +5,53 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Amazon ASIN Lookup</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: radial-gradient(ellipse at top left, #0f172a, #1e293b);
+      z-index: -3;
+      animation: gradientMove 20s ease infinite;
+      background-size: 300% 300%;
+    }
+
+    #particles {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    @keyframes gradientMove {
+      0%, 100% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+    }
+  </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col items-center justify-center px-4">
+<body class="text-white min-h-screen flex flex-col items-center justify-center px-4">
+  <canvas id="particles"></canvas>
   <div class="w-full max-w-6xl space-y-6">
-    <h1 class="text-3xl font-bold text-center text-gray-800">Amazon ASIN Lookup</h1>
+    <h1 class="text-4xl font-extrabold text-center">Amazon ASIN Lookup</h1>
 
     <div class="flex space-x-2">
       <input
         id="asinInput"
         type="text"
         placeholder="Enter ASINs (comma-separated)"
-        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+        class="flex-1 px-4 py-2 border border-gray-600 bg-gray-800 rounded-lg shadow-sm text-white focus:ring-blue-500 focus:border-blue-500"
       />
       <button
         onclick="lookupASINs()"
@@ -25,29 +61,29 @@
       </button>
     </div>
 
-    <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-      <div id="progressBar" class="bg-blue-500 h-2 w-0 transition-all duration-300 ease-in-out"></div>
+    <div class="w-full bg-gray-600 rounded-full h-2 overflow-hidden">
+      <div id="progressBar" class="bg-blue-400 h-2 w-0 transition-all duration-300 ease-in-out"></div>
     </div>
 
-    <div id="loading" class="text-gray-600 hidden text-center">Loading...</div>
+    <div id="loading" class="text-gray-300 hidden text-center">Loading...</div>
 
     <div class="overflow-auto rounded-md shadow hidden" id="tableWrapper">
-      <table id="resultTable" class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-100">
+      <table id="resultTable" class="min-w-full divide-y divide-gray-700 bg-gray-900">
+        <thead class="bg-gray-800">
           <tr id="headerRow">
-            <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Image</th>
-            <th class="sortable px-4 py-2 text-left text-sm font-medium text-gray-600 cursor-pointer">ASIN</th>
-            <th class="sortable px-4 py-2 text-left text-sm font-medium text-gray-600 cursor-pointer">Title</th>
-            <th class="sortable px-4 py-2 text-left text-sm font-medium text-gray-600 cursor-pointer">Price</th>
-            <th class="sortable px-4 py-2 text-left text-sm font-medium text-gray-600 cursor-pointer">Rating</th>
-            <th class="sortable px-4 py-2 text-left text-sm font-medium text-gray-600 cursor-pointer"># Ratings</th>
-            <th class="sortable px-4 py-2 text-left text-sm font-medium text-gray-600 cursor-pointer">Main Category</th>
-            <th class="sortable px-4 py-2 text-left text-sm font-medium text-gray-600 cursor-pointer">Main Rank</th>
-            <th class="sortable px-4 py-2 text-left text-sm font-medium text-gray-600 cursor-pointer">Sub Category</th>
-            <th class="sortable px-4 py-2 text-left text-sm font-medium text-gray-600 cursor-pointer">Sub Rank</th>
+            <th class="px-4 py-2 text-left text-sm font-medium text-gray-300">Image</th>
+            <th class="sortable px-4 py-2 text-left text-sm font-medium text-gray-300 cursor-pointer">ASIN</th>
+            <th class="sortable px-4 py-2 text-left text-sm font-medium text-gray-300 cursor-pointer">Title</th>
+            <th class="sortable px-4 py-2 text-left text-sm font-medium text-gray-300 cursor-pointer">Price</th>
+            <th class="sortable px-4 py-2 text-left text-sm font-medium text-gray-300 cursor-pointer">Rating</th>
+            <th class="sortable px-4 py-2 text-left text-sm font-medium text-gray-300 cursor-pointer"># Ratings</th>
+            <th class="sortable px-4 py-2 text-left text-sm font-medium text-gray-300 cursor-pointer">Main Category</th>
+            <th class="sortable px-4 py-2 text-left text-sm font-medium text-gray-300 cursor-pointer">Main Rank</th>
+            <th class="sortable px-4 py-2 text-left text-sm font-medium text-gray-300 cursor-pointer">Sub Category</th>
+            <th class="sortable px-4 py-2 text-left text-sm font-medium text-gray-300 cursor-pointer">Sub Rank</th>
           </tr>
         </thead>
-        <tbody id="resultBody" class="bg-white divide-y divide-gray-200"></tbody>
+        <tbody id="resultBody" class="divide-y divide-gray-700"></tbody>
       </table>
     </div>
   </div>
@@ -157,6 +193,41 @@
         });
       });
     });
+
+    // Particle animation
+    const canvas = document.getElementById("particles");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    window.addEventListener("resize", () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+
+    const particles = Array.from({ length: 50 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 2 + 1,
+      dx: (Math.random() - 0.5) * 0.5,
+      dy: (Math.random() - 0.5) * 0.5
+    }));
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "rgba(255,255,255,0.15)";
+      particles.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+        p.x += p.dx;
+        p.y += p.dy;
+        if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+      });
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
   </script>
 </body>
 </html>
