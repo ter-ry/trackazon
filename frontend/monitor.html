@@ -1,0 +1,203 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Amazon ASIN Monitor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: radial-gradient(ellipse at top left, #0f172a, #1e293b);
+      z-index: -3;
+      animation: gradientMove 20s ease infinite;
+      background-size: 300% 300%;
+    }
+    #particles {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -2;
+      pointer-events: none;
+    }
+    @keyframes gradientMove {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+  </style>
+</head>
+<body class="text-white min-h-screen flex flex-col items-center justify-center px-4">
+  <canvas id="particles"></canvas>
+  <div class="w-full max-w-7xl space-y-6">
+    <h1 class="text-4xl font-extrabold text-center">Amazon ASIN Monitor</h1>
+
+    <form id="monitorForm" class="space-y-4">
+      <div class="flex space-x-2">
+        <input id="asinMonitorInput" type="text" placeholder="Enter ASINs (comma-separated)"
+               class="flex-1 px-4 py-2 border border-gray-600 bg-gray-800 rounded-lg text-white" />
+        <input id="csvFile" type="file" accept=".csv"
+               class="block px-2 py-1 text-sm text-gray-300" />
+      </div>
+      <div class="flex space-x-4">
+        <label class="flex items-center space-x-2">
+          <span>Every:</span>
+          <select id="interval" class="bg-gray-800 border border-gray-600 text-white rounded px-2 py-1">
+            <option value="1">1 hour</option>
+            <option value="6">6 hours</option>
+            <option value="24">24 hours</option>
+          </select>
+        </label>
+        <label class="flex items-center space-x-2">
+          <span>For:</span>
+          <select id="duration" class="bg-gray-800 border border-gray-600 text-white rounded px-2 py-1">
+            <option value="1">1 day</option>
+            <option value="3">3 days</option>
+            <option value="7">7 days</option>
+          </select>
+        </label>
+        <button type="submit"
+                class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">
+          Start Monitoring
+        </button>
+      </div>
+    </form>
+
+    <div class="w-full bg-gray-600 rounded-full h-2 overflow-hidden">
+      <div id="progressBar" class="bg-blue-400 h-2 w-0 transition-all duration-300 ease-in-out"></div>
+    </div>
+
+    <div id="loading" class="text-gray-300 hidden text-center">Monitoring in progress...</div>
+
+    <div class="overflow-auto rounded-md shadow hidden" id="tableWrapper">
+      <table id="resultTable" class="min-w-full divide-y divide-gray-700 bg-gray-900">
+        <thead class="bg-gray-800">
+          <tr>
+            <th class="px-2 py-2 text-sm text-gray-300">Image</th>
+            <th class="px-2 py-2 text-sm text-gray-300">ASIN</th>
+            <th class="px-2 py-2 text-sm text-gray-300">Title</th>
+            <th class="px-2 py-2 text-sm text-gray-300">Price</th>
+            <th class="px-2 py-2 text-sm text-gray-300">Rating</th>
+            <th class="px-2 py-2 text-sm text-gray-300"># Ratings</th>
+            <th class="px-2 py-2 text-sm text-gray-300">Main Category</th>
+            <th class="px-2 py-2 text-sm text-gray-300">Main Rank</th>
+            <th class="px-2 py-2 text-sm text-gray-300">Sub Category</th>
+            <th class="px-2 py-2 text-sm text-gray-300">Sub Rank</th>
+            <th class="px-2 py-2 text-sm text-gray-300">Timestamp</th>
+          </tr>
+        </thead>
+        <tbody id="resultBody" class="divide-y divide-gray-700"></tbody>
+      </table>
+    </div>
+
+    <button onclick="downloadCSV()"
+            class="mt-4 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">
+      Download CSV
+    </button>
+  </div>
+
+  <script>
+    document.getElementById("monitorForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const asins = document.getElementById("asinMonitorInput").value;
+      const file = document.getElementById("csvFile").files[0];
+      const interval = document.getElementById("interval").value;
+      const duration = document.getElementById("duration").value;
+
+      const formData = new FormData();
+      formData.append("interval", interval);
+      formData.append("duration", duration);
+      if (file) formData.append("file", file);
+      else formData.append("asins", asins);
+
+      document.getElementById("loading").classList.remove("hidden");
+
+      await fetch("http://localhost:5000/monitor/start", {
+        method: "POST",
+        body: formData
+      });
+
+      pollData();
+    });
+
+    async function pollData() {
+      setInterval(async () => {
+        const res = await fetch("http://localhost:5000/monitor/current");
+        const data = await res.json();
+        renderTable(data);
+        document.getElementById("tableWrapper").classList.remove("hidden");
+        document.getElementById("progressBar").style.width = "100%";
+      }, 5000);
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById("resultBody");
+      tbody.innerHTML = "";
+      data.forEach(item => {
+        const row = `
+          <tr>
+            <td class="px-2 py-2">${item.image ? `<img src="${item.image}" class="w-12 rounded"/>` : "❌"}</td>
+            <td class="px-2 py-2">${item.asin}</td>
+            <td class="px-2 py-2">${item.name || "❌"}</td>
+            <td class="px-2 py-2">${item.price ?? "❌"}</td>
+            <td class="px-2 py-2">${item.rating ?? "❌"}</td>
+            <td class="px-2 py-2">${item.no_of_ratings ?? "❌"}</td>
+            <td class="px-2 py-2">${item.main_category || "❌"}</td>
+            <td class="px-2 py-2">${item.main_category_rank ?? "❌"}</td>
+            <td class="px-2 py-2">${item.sub_category || "❌"}</td>
+            <td class="px-2 py-2">${item.sub_category_rank ?? "❌"}</td>
+            <td class="px-2 py-2">${item.timestamp || "❌"}</td>
+          </tr>`;
+        tbody.innerHTML += row;
+      });
+    }
+
+    function downloadCSV() {
+      window.location.href = "http://localhost:5000/monitor/download";
+    }
+
+    // Particle animation
+    const canvas = document.getElementById("particles");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    window.addEventListener("resize", () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+
+    const particles = Array.from({ length: 50 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 2 + 1,
+      dx: (Math.random() - 0.5) * 0.5,
+      dy: (Math.random() - 0.5) * 0.5
+    }));
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "rgba(255,255,255,0.15)";
+      particles.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+        p.x += p.dx;
+        p.y += p.dy;
+        if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+      });
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+  </script>
+</body>
+</html>
