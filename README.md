@@ -1,6 +1,6 @@
-# 🛒 Amazon Analyzer — ASIN Lookup Tool
+# 🛒 Trackazon — ASIN Lookup Tool
 
-This is Part 1 of the **Amazon Analyzer Project**, a full-stack web tool that scrapes and analyzes live product data from Amazon using ASINs.
+This is Part 1 of the **Trackazon**, a full-stack web tool that scrapes and analyzes live product data from Amazon using ASINs.
 
 > 🔍 Lookup any Amazon ASIN to retrieve detailed product info in real-time — directly from the source.
 
@@ -8,7 +8,7 @@ This is Part 1 of the **Amazon Analyzer Project**, a full-stack web tool that sc
 
 ## 🔧 Features
 
-- Enter multiple ASINs (comma-separated)
+- Enter one or multiple ASINs (comma-separated)
 - Real-time scraping with Scrapy and Flask
 - Retrieves:
   - Product title and price
@@ -34,8 +34,8 @@ This is Part 1 of the **Amazon Analyzer Project**, a full-stack web tool that sc
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/your-username/amazon-analyzer.git
-cd amazon-analyzer
+git clone https://github.com/ter-ry/trackazon.git
+cd trackazon
 ```
 
 ### 2. Set up Python backend
@@ -48,7 +48,7 @@ python app.py
 
 ### 3. Launch the frontend
 
-- Open `docs/index.html` in any browser
+- Open `frontend/index.html` in any browser
 - It connects to `http://localhost:5000` by default  
 ✅ You’re ready to scrape product data live.
 
@@ -68,8 +68,8 @@ README.md   → You are here
 ## ⚠️ Notes
 
 - The backend must be running locally for the tool to work.
-- Works best with ASINs from **amazon.com**
-- **amazon.ca** ASINs may differ or return 404
+- Works best with ASINs from **amazon.ca**
+- **amazon.com** ASINs may differ or return 404
 - Requires Python 3.8–3.12 for Scrapy compatibility
 
 ---
