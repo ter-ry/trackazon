@@ -32,42 +32,58 @@ This is Part 1 of the **Amazon Analyzer Project**, a full-stack web tool that sc
 ## 🚀 How to Run Locally
 
 ### 1. Clone the repo
+
 ```bash
 git clone https://github.com/your-username/amazon-analyzer.git
 cd amazon-analyzer
+```
 
 ### 2. Set up Python backend
+
 ```bash
 cd backend
 pip install -r requirements.txt
 python app.py
+```
 
 ### 3. Launch the frontend
-Open docs/index.html in any browser
-It connects to http://localhost:5000 by default
+
+- Open `docs/index.html` in any browser
+- It connects to `http://localhost:5000` by default  
 ✅ You’re ready to scrape product data live.
 
+---
 
-🗂 Folder Structure
-backend/    → Flask API that triggers the spider
-scraper/    → Scrapy project for Amazon scraping
-docs/       → Frontend interface (GitHub Pages ready)
-README.md   → You are here
+## 🗂 Folder Structure
 
+```
+backend/    → Flask API that triggers the spider  
+scraper/    → Scrapy project for Amazon scraping  
+docs/       → Frontend interface (GitHub Pages ready)  
+README.md   → You are here  
+```
 
-⚠️ Notes
-The backend must be running locally for the tool to work.
-Works best with ASINs from amazon.ca
-amazon.com ASINs may differ or return 404
-Ensure your environment uses Python 3.8–3.12 for Scrapy compatibility
+---
 
+## ⚠️ Notes
 
-📦 Roadmap
-Phase        Feature	                              Status
-✅ Part 1   ASIN Lookup Tool	                        Complete
-🔄 Part 2   Scheduled Monitoring + CSV Export	     In Progress
-⏳ Part 3   Interactive Price & Rating Dashboard	    Coming Soon
+- The backend must be running locally for the tool to work.
+- Works best with ASINs from **amazon.com**
+- **amazon.ca** ASINs may differ or return 404
+- Requires Python 3.8–3.12 for Scrapy compatibility
 
+---
 
-⭐️ Like This Project?
+## 📦 Roadmap
+
+| Phase     | Feature                               | Status       |
+|-----------|----------------------------------------|--------------|
+| ✅ Part 1 | ASIN Lookup Tool                        | Complete     |
+| 🔄 Part 2 | Scheduled Monitoring + CSV Export       | In Progress  |
+| ⏳ Part 3 | Interactive Price & Rating Dashboard    | Coming Soon  |
+
+---
+
+## ⭐️ Like This Project?
+
 Give it a ⭐ on GitHub or connect with me — feedback and collaboration welcome!
